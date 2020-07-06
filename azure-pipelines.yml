@@ -50,7 +50,7 @@ stages:
       displayName: 'Carthage dependencies'
       inputs:
         script: |
-          cd $(Build.SourcesDirectory)/dev
+          cd $(Build.SourcesDirectory)
           carthage update --platform iOS
 
     - task: CmdLine@2
