@@ -57,7 +57,7 @@ stages:
       displayName: 'CocoaPods install'
       inputs:
         script: |
-          cd $(Build.SourcesDirectory)/dev
+          cd $(Build.SourcesDirectory)
           echo "Pod installation"
           pod install
 
