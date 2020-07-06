@@ -75,6 +75,7 @@ stages:
         signingOption: 'manual'
         signingIdentity: 'iPhone Distribution: Mohsin Hassan (6CTRFH4M5H)'
         provisioningProfileUuid: '$(OTOZDistProfileUUID)'
+        provisioningProfileName: '$(OTOZDistProfileName)'
       
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: version'
