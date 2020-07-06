@@ -65,13 +65,13 @@ stages:
       displayName: 'Xcode Drivemate Build'
       inputs:
         actions: 'build'
-        xcWorkspacePath: 'dev/Drivemate.xcworkspace'
+        xcWorkspacePath: 'CICD.xcworkspace'
         scheme: 'Drivemate DEV'
         xcodeVersion: 'specifyPath'
         xcodeDeveloperDir: '/Applications/Xcode_11.2.1.app'
         packageApp: true
         exportOptions: 'plist'
-        exportOptionsPlist: 'dev/Drivemate dev-Info.plist'
+        exportOptionsPlist: 'CICD/Info.plist'
         signingOption: 'manual'
         signingIdentity: 'iPhone Distribution: Mohsin Hassan (6CTRFH4M5H)'
         provisioningProfileUuid: '$(OTOZDistProfileUUID)'
