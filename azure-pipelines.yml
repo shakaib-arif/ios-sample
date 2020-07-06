@@ -1,0 +1,101 @@
+trigger:
+  branches:
+    include:
+      - main
+
+resources:
+- repo: self
+
+pool:
+  vmImage: 'macos-latest'
+
+variables:
+  isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  Configuration: Release
+  sdk: iphoneos
+  P12Password: ''
+  TestConfiguration: Debug
+  OTOZDistProfileUUID: 7e8226bd-3778-443f-8f1b-1415f365f9c0.mobileprovision
+  OTOZDistProfileName: 'OTOZ-DistProfile'
+  OneSignalDistProfileUUID: c889f08d-d733-4701-ac3b-b91bc2712492.mobileprovision
+  OneSignalDistProfileName: 'OneSignalDist'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Drivemate_Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    steps:
+    - task: InstallAppleCertificate@2
+      displayName: 'Install Certificates'
+      inputs:
+        certSecureFile: '3Certificates.p12'
+        certPwd: '$(P12Password)'
+        keychain: 'temp'
+    
+
+    - task: InstallAppleProvisioningProfile@1
+      displayName: 'Install Drivemate Dev provisioning profile'
+      inputs:
+        provisioningProfileLocation: 'secureFiles'
+        provProfileSecureFile: 'OTOZDistProfile-new.mobileprovision'
+
+    - task: InstallAppleProvisioningProfile@1
+      displayName: 'Install OneSignal provisioning profile'
+      inputs:
+        provisioningProfileLocation: 'secureFiles'
+        provProfileSecureFile: 'OneSignalDist-new.mobileprovision'
+
+    - task: CmdLine@2
+      displayName: 'Carthage dependencies'
+      inputs:
+        script: |
+          cd $(Build.SourcesDirectory)/dev
+          carthage update --platform iOS
+
+    - task: CmdLine@2
+      displayName: 'CocoaPods install'
+      inputs:
+        script: |
+          cd $(Build.SourcesDirectory)/dev
+          echo "Pod installation"
+          pod install
+
+    - task: Xcode@5
+      displayName: 'Xcode Drivemate Build'
+      inputs:
+        actions: 'build'
+        xcWorkspacePath: 'dev/Drivemate.xcworkspace'
+        scheme: 'Drivemate DEV'
+        xcodeVersion: 'specifyPath'
+        xcodeDeveloperDir: '/Applications/Xcode_11.2.1.app'
+        packageApp: true
+        exportOptions: 'plist'
+        exportOptionsPlist: 'dev/Drivemate dev-Info.plist'
+        signingOption: 'manual'
+        signingIdentity: 'iPhone Distribution: Mohsin Hassan (6CTRFH4M5H)'
+        provisioningProfileUuid: '$(OTOZDistProfileUUID)'
+      
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: version'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/version.json'
+        ArtifactName: version
+
+- stage: Dev
+  condition: and(succeeded(), eq(variables.isDevelop, true))
+  displayName: Dev Environment
+  jobs:
+  - deployment: Deploy_to_Dev
+    displayName: Dev Environment
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    environment: 'Dev Environment'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: 'version'
+              downloadPath: '$(System.ArtifactsDirectory)'
