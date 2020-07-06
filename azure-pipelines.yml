@@ -46,12 +46,12 @@ stages:
         provisioningProfileLocation: 'secureFiles'
         provProfileSecureFile: 'OneSignalDist-new.mobileprovision'
 
-    - task: CmdLine@2
-      displayName: 'Carthage dependencies'
-      inputs:
-        script: |
-          cd $(Build.SourcesDirectory)
-          carthage update --platform iOS
+    # - task: CmdLine@2
+    #   displayName: 'Carthage dependencies'
+    #   inputs:
+    #     script: |
+    #       cd $(Build.SourcesDirectory)
+    #       carthage update --platform iOS
 
     - task: CmdLine@2
       displayName: 'CocoaPods install'
